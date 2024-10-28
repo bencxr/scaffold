@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { BugAntIcon, MagnifyingGlassIcon, WalletIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
 
 const Home: NextPage = () => {
@@ -51,7 +51,7 @@ const Home: NextPage = () => {
                 tab.
               </p>
             </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
+            <div className="flex flex-col bg-base-100 px-10 py-10 text-Faucet items-center max-w-xs rounded-3xl">
               <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
               <p>
                 Explore your local transactions with the{" "}
@@ -59,6 +59,15 @@ const Home: NextPage = () => {
                   Block Explorer
                 </Link>{" "}
                 tab.
+              </p>
+            </div>
+            <div className="flex flex-col bg-base-100 px-10 py-10 text-Faucet items-center max-w-xs rounded-3xl">
+              <WalletIcon className="h-8 w-8 fill-secondary" />
+              <p>
+                Test integration for{" "}
+                <Link href="/web3auth" passHref className="link">
+                  Web3Auth
+                </Link>{" "}
               </p>
             </div>
           </div>
