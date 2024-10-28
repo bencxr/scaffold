@@ -1,11 +1,10 @@
 "use client";
 /* eslint-disable */
-
 import type { NextPage } from "next";
 import { useEffect, useState } from "react";
 
 import { Web3Auth } from "@web3auth/modal";
-import { CommonPrivateKeyProvider } from "@web3auth/base-provider";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import {
     CHAIN_NAMESPACES,
     IAdapter,
@@ -18,11 +17,12 @@ import {
 import { getInjectedAdapters } from "@web3auth/default-evm-adapter";
 import { AuthAdapter, WHITE_LABEL_THEME, WhiteLabelData } from "@web3auth/auth-adapter";
 
+import RPC from "./viemRPC";
 
 const chainConfig = {
     chainNamespace: CHAIN_NAMESPACES.EIP155,
-    chainId: "0x1", // Mainnet
-    rpcTarget: "https://rpc.ankr.com/eth",
+    chainId: "0xaa36a7",
+    rpcTarget: "https://rpc.ankr.com/eth_sepolia",
     displayName: "Ethereum Mainnet",
     blockExplorer: "https://etherscan.io/",
     ticker: "ETH",
@@ -32,14 +32,14 @@ const chainConfig = {
     networkId: "1",
 };
 
-const privateKeyProvider = new CommonPrivateKeyProvider({
+const privateKeyProvider = new EthereumPrivateKeyProvider({
     config: {
         chainConfig
     }
 });
 
-//const clientId = "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get from https://dashboard.web3auth.io
-const clientId = "BJmYNZMKxLHdmXdffnYBaK0OD4NFGHsCXuYWcAwUUvofNqr3vdlg_whLI4wWYm1An5TFHJN9PkEDEElEYaOIkZA";
+// const clientId = "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // this is the web3auth demo default
+const clientId = "BJmYNZMKxLHdmXdffnYBaK0OD4NFGHsCXuYWcAwUUvofNqr3vdlg_whLI4wWYm1An5TFHJN9PkEDEElEYaOIkZA"; //  get from https://dashboard.web3auth.io
 
 const web3AuthOptions = {
     clientId,
@@ -141,6 +141,58 @@ const Web3AuthStarter: NextPage = () => {
         }
     }
 
+    // IMP START - Blockchain Calls
+    // Check the RPC file for the implementation
+    const getChainId = async () => {
+        if (!provider) {
+            uiConsole("provider not initialized yet");
+            return;
+        }
+        const chainId = await RPC.getChainId(provider);
+        uiConsole(chainId);
+    };
+
+
+    // IMP START - Blockchain Calls
+    // Check the RPC file for the implementation
+    const getAccounts = async () => {
+        if (!provider) {
+            uiConsole("provider not initialized yet");
+            return;
+        }
+        const address = await RPC.getAccounts(provider);
+        uiConsole(address);
+    };
+
+    const getBalance = async () => {
+        if (!provider) {
+            uiConsole("provider not initialized yet");
+            return;
+        }
+        const balance = await RPC.getBalance(provider);
+        uiConsole(balance);
+    };
+
+    const signMessage = async () => {
+        if (!provider) {
+            uiConsole("provider not initialized yet");
+            return;
+        }
+        const signedMessage = await RPC.signMessage(provider);
+        uiConsole(signedMessage);
+    };
+
+    const sendTransaction = async () => {
+        if (!provider) {
+            uiConsole("provider not initialized yet");
+            return;
+        }
+        uiConsole("Sending Transaction...");
+        const transactionReceipt = await RPC.sendTransaction(provider);
+        uiConsole(transactionReceipt);
+    };
+    // IMP END - Blockchain Calls
+
     const loggedInView = (
         <>
             <div className="flex-container">
@@ -149,7 +201,12 @@ const Web3AuthStarter: NextPage = () => {
                         Get User Info
                     </button>
                 </div>
-                {/* <div>
+                <div>
+                    <button onClick={getChainId} className="card">
+                        Get Chain Id
+                    </button>
+                </div>
+                <div>
                     <button onClick={getAccounts} className="card">
                         Get Accounts
                     </button>
@@ -168,7 +225,7 @@ const Web3AuthStarter: NextPage = () => {
                     <button onClick={sendTransaction} className="card">
                         Send Transaction
                     </button>
-                </div> */}
+                </div>
                 <div>
                     <button onClick={logout} className="card">
                         Log Out
