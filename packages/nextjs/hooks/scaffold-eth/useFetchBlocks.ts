@@ -5,19 +5,21 @@ import {
   Transaction,
   TransactionReceipt,
   createTestClient,
+  http,
   publicActions,
   walletActions,
   webSocket,
 } from "viem";
-import { hardhat } from "viem/chains";
 import { decodeTransactionData } from "~~/utils/scaffold-eth";
+import { hardhat, hardhatWsUrl } from "~~/utils/scaffold-eth/hardhatChain";
 
 const BLOCKS_PER_PAGE = 20;
 
 export const testClient = createTestClient({
   chain: hardhat,
   mode: "hardhat",
-  transport: webSocket("ws://127.0.0.1:8545"),
+  // A proxied RPC URL (NEXT_PUBLIC_HARDHAT_RPC_URL) may not support websockets, so use http there
+  transport: process.env.NEXT_PUBLIC_HARDHAT_RPC_URL ? http() : webSocket(hardhatWsUrl),
 })
   .extend(publicActions)
   .extend(walletActions);
@@ -89,7 +91,10 @@ export const useFetchBlocks = () => {
         if (currentPage === 0) {
           if (newBlock.transactions.length > 0) {
             const transactionsDetails = await Promise.all(
-              newBlock.transactions.map((txHash: string) => testClient.getTransaction({ hash: txHash as Hash })),
+              // websocket subscriptions return tx hashes, http polling returns full transactions
+              newBlock.transactions.map((tx: string | Transaction) =>
+                typeof tx === "string" ? testClient.getTransaction({ hash: tx as Hash }) : tx,
+              ),
             );
             newBlock.transactions = transactionsDetails;
           }
@@ -108,7 +113,12 @@ export const useFetchBlocks = () => {
             }),
           );
 
-          setBlocks(prevBlocks => [newBlock, ...prevBlocks.slice(0, BLOCKS_PER_PAGE - 1)]);
+          // http polling also emits the latest block, which may already be listed
+          setBlocks(prevBlocks =>
+            prevBlocks.some(block => block.number === newBlock.number)
+              ? prevBlocks
+              : [newBlock, ...prevBlocks.slice(0, BLOCKS_PER_PAGE - 1)],
+          );
           setTransactionReceipts(prevReceipts => ({ ...prevReceipts, ...Object.assign({}, ...receipts) }));
         }
         if (newBlock.number) {
