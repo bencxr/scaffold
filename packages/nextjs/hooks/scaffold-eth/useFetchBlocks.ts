@@ -91,7 +91,10 @@ export const useFetchBlocks = () => {
         if (currentPage === 0) {
           if (newBlock.transactions.length > 0) {
             const transactionsDetails = await Promise.all(
-              newBlock.transactions.map((txHash: string) => testClient.getTransaction({ hash: txHash as Hash })),
+              // websocket subscriptions return tx hashes, http polling returns full transactions
+              newBlock.transactions.map((tx: string | Transaction) =>
+                typeof tx === "string" ? testClient.getTransaction({ hash: tx as Hash }) : tx,
+              ),
             );
             newBlock.transactions = transactionsDetails;
           }
@@ -110,7 +113,12 @@ export const useFetchBlocks = () => {
             }),
           );
 
-          setBlocks(prevBlocks => [newBlock, ...prevBlocks.slice(0, BLOCKS_PER_PAGE - 1)]);
+          // http polling also emits the latest block, which may already be listed
+          setBlocks(prevBlocks =>
+            prevBlocks.some(block => block.number === newBlock.number)
+              ? prevBlocks
+              : [newBlock, ...prevBlocks.slice(0, BLOCKS_PER_PAGE - 1)],
+          );
           setTransactionReceipts(prevReceipts => ({ ...prevReceipts, ...Object.assign({}, ...receipts) }));
         }
         if (newBlock.number) {
