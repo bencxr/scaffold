@@ -7,8 +7,8 @@ import { AddressStorageTab } from "./AddressStorageTab";
 import { PaginationButton } from "./PaginationButton";
 import { TransactionsTable } from "./TransactionsTable";
 import { createPublicClient, http } from "viem";
-import { hardhat } from "viem/chains";
 import { useFetchBlocks } from "~~/hooks/scaffold-eth";
+import { hardhat } from "~~/utils/scaffold-eth/hardhatChain";
 
 type AddressCodeTabProps = {
   bytecode: string;

@@ -5,19 +5,21 @@ import {
   Transaction,
   TransactionReceipt,
   createTestClient,
+  http,
   publicActions,
   walletActions,
   webSocket,
 } from "viem";
-import { hardhat } from "viem/chains";
 import { decodeTransactionData } from "~~/utils/scaffold-eth";
+import { hardhat, hardhatWsUrl } from "~~/utils/scaffold-eth/hardhatChain";
 
 const BLOCKS_PER_PAGE = 20;
 
 export const testClient = createTestClient({
   chain: hardhat,
   mode: "hardhat",
-  transport: webSocket("ws://127.0.0.1:8545"),
+  // A proxied RPC URL (NEXT_PUBLIC_HARDHAT_RPC_URL) may not support websockets, so use http there
+  transport: process.env.NEXT_PUBLIC_HARDHAT_RPC_URL ? http() : webSocket(hardhatWsUrl),
 })
   .extend(publicActions)
   .extend(walletActions);
